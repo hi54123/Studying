@@ -15,17 +15,18 @@ print("""游戏规则：
 你需要选择一个射门方向，机器也会随机选择射门方向
 如果方向不同，你就赢了。
 如果方向相同你就输了
-简单吧，简单就开始吧！""")
-input('回车以开始')
+简单吧，简单就开始吧！
+""")
+input('回车以开始\n\n')
 
 print('请选择射门方向')
-#初始化变量
+# 初始化变量
 way = ['left', 'middle', 'right']
 player_score = 0
 computer_score = 0
 times = 5
 computer_times = 5
-#输入方向
+# 输入方向
 
 q = 3
 while True:
@@ -33,7 +34,7 @@ while True:
 
     if player_choose in way:
         computer_choose = choice(way)
-        #计算胜负
+        # 计算胜负
 
         if player_choose == computer_choose:
             computer_score += 1

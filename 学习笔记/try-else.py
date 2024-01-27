@@ -129,7 +129,7 @@ print('\n\n例3，有错误，捕捉失败')
 try:
     int('awa')
 
-except AttributeError:  #随便写的，因为它在第一个
+except AttributeError:  # 随便写的，因为它在第一个
     print('AttributeError')
 
 else:
