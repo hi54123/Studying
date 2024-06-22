@@ -4,7 +4,7 @@ import json
 
 class Player1:
 	name = ''
-	hp = 2
+	hp = 3
 	down = False
 	points = 0
 	got_items = []
@@ -24,7 +24,7 @@ class Player1:
 
 class Player2:
 	name = ''
-	hp = 2
+	hp = 3
 	down = False
 	points = 0
 	got_items = []
@@ -55,10 +55,11 @@ class GlobalVariables:
 	flag = False
 	index = 0
 	will_change = True
+	higest_hp = {1: 3, 2: 4, 3: 6}
 
 
 def restart():
-	Player1.hp = 2
+	Player1.hp = 3
 	Player1.points = 0
 	Player1.got_items = []
 	Player1.shots = 0
@@ -70,7 +71,7 @@ def restart():
 	Player1.handcuff_used = 0
 	Player1.smoke_used = 0
 
-	Player2.hp = 2
+	Player2.hp = 3
 	Player2.points = 0
 	Player2.got_items = []
 	Player2.shots = 0
@@ -229,30 +230,22 @@ def introduce():
 	for i in range(20):
 		print('\n')
 
-	input("""
-	DEALER：
-	你们好，你们两个来我这一定是想拿走奖金吧。
-	那么，请做好准备。
-	好戏就要开始了……
-	让我介绍一下规则：
-	每轮会出现不同数量的子弹，
-	有的是实弹，有的是空弹，
-	你可以选择对对方开枪，或是对自己开枪。
-	实弹-1血量，空弹无事发生，很好理解对吧。
-	如果向自己开枪是实弹，枪便会交给对手；如果是空弹，那么你将会继续持枪。
-	如果向对方开枪，无论实弹或空弹都会结束你的回合。
-
-	很简单吧，那么就开始吧！
-	（回车以开始）
-	""")
-
 
 def fight():
 	def reload(least, most):
 		Gun.bullets_num = random.randint(least, most)
 		Gun.bullets = []
+		all_true, all_false = True, True
 		for i in range(Gun.bullets_num):
 			Gun.bullets.append(random.choice([True, False]))
+		for i in Gun.bullets:
+			if i:
+				all_false = False
+			else:
+				all_true = False
+
+		if all_true or all_false:
+			reload(least, most)
 
 		reals, fakes = 0, 0
 		for i in Gun.bullets:
@@ -274,7 +267,8 @@ def fight():
 				if Gun.bullets[GlobalVariables.index]:
 					GlobalVariables.enemy.hp -= Gun.damage
 					GlobalVariables.index += 1
-					print(f'实弹，{GlobalVariables.enemy.name} 扣除1点血量，剩余 {GlobalVariables.enemy.hp} 点血量\n')
+					print(
+						f'实弹，{GlobalVariables.enemy.name} 扣除{Gun.damage}点血量，剩余 {GlobalVariables.enemy.hp} 点血量\n')
 					GlobalVariables.enemy.have_hurts += 1
 					GlobalVariables.controller.hurts += 1
 
@@ -288,6 +282,9 @@ def fight():
 				if GlobalVariables.will_change:
 					GlobalVariables.controller, GlobalVariables.enemy = GlobalVariables.enemy, GlobalVariables.controller
 
+				Gun.damage = 1
+				GlobalVariables.will_change = True
+
 			elif op == '2':
 				GlobalVariables.controller.shots += 1
 
@@ -295,7 +292,7 @@ def fight():
 					GlobalVariables.controller.hp -= Gun.damage
 					GlobalVariables.index += 1
 					print(
-						f'实弹，{GlobalVariables.controller.name} 扣除1点血量，剩余 {GlobalVariables.controller.hp} 点血量\n')
+						f'实弹，{GlobalVariables.controller.name} 扣除{Gun.damage}点血量，剩余 {GlobalVariables.controller.hp} 点血量\n')
 					GlobalVariables.controller.have_hurts += 1
 
 					if GlobalVariables.rounds == 3 and GlobalVariables.controller.down:
@@ -307,6 +304,8 @@ def fight():
 					print(f'空弹，{GlobalVariables.enemy.name} 未扣除血量，剩余 {GlobalVariables.enemy.hp} 点血量\n')
 					GlobalVariables.index += 1
 
+				Gun.damage = 1
+				GlobalVariables.will_change = True
 			elif op == '3':
 				while True:
 					print(f'{GlobalVariables.controller.name}拥有的道具:{GlobalVariables.controller.got_items}')
@@ -332,14 +331,11 @@ def fight():
 			else:
 				print('输入错误，请重新输入')
 
-			Gun.damage = 1
-			GlobalVariables.will_change = True
-
-			if Player1.hp <= 2:
+			if Player1.hp <= 2 and GlobalVariables.rounds == 3:
 				Player1.down = True
 				print(f'{Player1.name}的血量小于等于2，将无法加血，并且一枪便会死亡')
 
-			if Player2.hp <= 2:
+			if Player2.hp <= 2 and GlobalVariables.rounds == 3:
 				Player2.down = True
 				print(f'{Player2.name}的血量小于等于2，将无法加血，并且一枪便会死亡')
 
@@ -397,6 +393,8 @@ def fight():
 					print('吸入一根香烟，增加了1点生命值')
 					GlobalVariables.controller.hp += 1
 					GlobalVariables.controller.smoke_used += 1
+					if GlobalVariables.controller.hp > GlobalVariables.higest_hp[GlobalVariables.rounds]:
+						GlobalVariables.controller.hp = GlobalVariables.higest_hp[GlobalVariables.rounds]
 
 				if GlobalVariables.rounds == 3 and GlobalVariables.controller.hp <= 2:
 					print('您的血量少于2，无法加血，但仍然使用了香烟')
@@ -414,9 +412,11 @@ def fight():
 					i = random.randint(0, Gun.bullets_num - 1)
 
 				if Gun.bullets[i]:
-					print(f'第{i + 1}发是实弹')
+					input(f'第{i + 1}发是实弹，回车进行下一步')
+					print('\n' * 50)
 				else:
-					print(f'第{i + 1}发是空弹')
+					input(f'第{i + 1}发是空弹，回车进行下一步')
+					print('\n' * 50)
 				GlobalVariables.controller.got_items.remove('手机')
 				GlobalVariables.controller.phone_used += 1
 			else:
@@ -436,8 +436,11 @@ def fight():
 			}
 			if '肾上腺素' in GlobalVariables.controller.got_items:
 				print(GlobalVariables.enemy.got_items)
-				use = input('请选择对方的道具，选择后将会立即使用（使用道具编号，如 肾上腺素 -> 7）')
-				if item_dict[use] in GlobalVariables.enemy.got_items:
+				use = input('请选择对方的道具，选择后将会立即使用（使用道具编号，如 肾上腺素 -> 7）\n或输入q退出')
+				if use == 'q':
+					pass
+
+				elif item_dict[use] in GlobalVariables.enemy.got_items:
 					GlobalVariables.enemy.got_items.remove(item_dict[use])
 					GlobalVariables.controller.got_items.append(item_dict[use])
 					use_item(use)
@@ -465,20 +468,18 @@ def fight():
 
 		elif op == '9':
 			if '小药丸' in GlobalVariables.controller.got_items:
-				if GlobalVariables.rounds != 3:
-					a = random.randint(1, 100)
-					if a <= 60:
-						GlobalVariables.controller.hp -= 1
-						print(f'哦~运气真不好，扣除一滴血,剩余{GlobalVariables.controller.hp}滴')
-					if a > 60:
-						if GlobalVariables.rounds == 3 and GlobalVariables.controller.hp <= 2:
-							print('您的血量少于2，无法加血，但仍然使用了药丸')
-						else:
-							GlobalVariables.controller.hp += 2
-							print(f'哇塞！运气真好，增加两滴血,剩余{GlobalVariables.controller.hp}滴')
-
-				if GlobalVariables.rounds == 3 and GlobalVariables.controller.hp <= 2:
-					print('您的血量少于2，无法加血，但仍然使用了香烟')
+				a = random.randint(1, 100)
+				if a <= 60:
+					GlobalVariables.controller.hp -= 1
+					print(f'哦~运气真不好，扣除一滴血,剩余{GlobalVariables.controller.hp}滴')
+				if a > 60:
+					if GlobalVariables.rounds == 3 and GlobalVariables.controller.hp <= 2:
+						print('您的血量少于2，无法加血，但仍然使用了药丸')
+					else:
+						GlobalVariables.controller.hp += 2
+						print(f'哇塞！运气真好，增加两滴血,剩余{GlobalVariables.controller.hp}滴')
+						if GlobalVariables.controller.hp > GlobalVariables.higest_hp[GlobalVariables.rounds]:
+							GlobalVariables.controller.hp = GlobalVariables.higest_hp[GlobalVariables.rounds]
 
 				GlobalVariables.controller.medicine_used += 1
 				GlobalVariables.controller.got_items.remove('小药丸')
@@ -500,11 +501,11 @@ def fight():
 		most = 4
 	elif GlobalVariables.rounds == 2:
 		Player1.hp, Player2.hp = 4, 4
-		least = 4
-		most = 6
+		least = 6
+		most = 8
 	elif GlobalVariables.rounds == 3:
-		Player1.hp, Player2.hp = 4, 4
-		least = 5
+		Player1.hp, Player2.hp = 6, 6
+		least = 6
 		most = 8
 
 	while True:
@@ -606,6 +607,10 @@ def show_stats(name):  # 展示统计信息: 总游戏数，总胜利游戏数�
 放大镜使用次数: {data_dict['glass_used']}
 手铐使用次数: {data_dict['handcuff_used']}
 香烟使用次数: {data_dict['smoke_used']}
+手机使用次数：{data_dict['phone_used']}
+肾上腺素使用次数：{data_dict['epinephrine_used']}
+转换器使用次数：{data_dict['changer_used']}
+小药丸使用次数：{data_dict['medicine_used']}
 """)
 		index += 1
 
@@ -620,9 +625,12 @@ def main():
 
 	while True:
 		restart()
-		op = input('输入1开始游戏；输入2展示统计信息')
+		flag = True
 		while GlobalVariables.rounds <= 3:
+			if flag:
+				op = input('输入1开始游戏；输入2展示统计信息')
 			if op == '1':
+				flag = False
 				fight()
 
 				if Player1.hp <= 0:
@@ -656,7 +664,6 @@ def main():
 					print('输入错误')
 			else:
 				print('输入错误，请重新输入')
-				break
 
 		print(f'结算:\n{Player1.name} 共胜利 {Player1.points} 局，{Player2.name} 共胜利 {Player2.points} 局')
 		if Player1.points > Player2.points:
