@@ -35,17 +35,19 @@ while True:
                         ans = int(ans)
                         times += 1
                         if ans > num:
-                            print('你猜大了')
+                            print('你他妈的猜得太大了')
 
                         elif ans < num:
-                            print('你猜小了')
+                            print('你猜得真他妈的小')
 
                         elif ans == num:
-                            print(f'恭喜你，猜对了。一共用了{times}次')
-                            break
+                            if times == 1:
+                                print('这么有实力？！一发入魂')
+                                break
+                            print(f'恭喜你他娘的猜对了。一共用了{times}次')
 
                     else:
-                        print('输入错误，请输入整数')
+                        print('你输的什么鬼东西，给老子输入整数')
 
                 op2 = input('此模式再来一局？退出将回到模式选择(y/n)')
                 if op2 == 'y':
@@ -55,7 +57,7 @@ while True:
                     break
 
             else:
-                print("输入错误，请输入整数")
+                print('你他妈输的什么鬼东西，给老子输入整数')
 
     # 规定次数
     elif op == '2':
@@ -76,19 +78,20 @@ while True:
                             ans = int(ans)
                             times += 1
 
-                            if times < can_Times:
-                                if ans > num:
-                                    print('你猜大了')
+                            if ans > num:
+                                print(f'你他妈的猜得太大了，还剩{can_Times - times}次机会，给爷好好珍惜吧')
 
-                                elif ans < num:
-                                    print('你猜小了')
+                            elif ans < num:
+                                print(f'你猜得真他妈的小，还剩{can_Times - times}次机会，给爷好好珍惜吧')
 
-                                elif ans == num:
-                                    print(f'恭喜你，猜对了。一共用了{times}次')
+                            elif ans == num:
+                                if times == 1:
+                                    print('这么有实力？！一发入魂')
                                     break
+                                print(f'恭喜你他娘的猜对了。一共用了{times}次')
 
                         else:
-                            print('输入错误，请输入整数')
+                            print('你他妈输的什么鬼东西，给老子输入整数')
 
                     op2 = input('此模式再来一局？退出将回到模式选择(y/...)')
                     if op2 == 'y':
@@ -98,12 +101,12 @@ while True:
                         break
 
                 else:
-                    print("输入错误，请输入整数")
+                    print('你他妈输的什么鬼东西，给老子输入整数')
             else:
-                print("输入错误，请输入整数")
+                print('你他妈输的什么鬼东西，给老子输入整数')
 
     elif op == 'q':
         quit(0)
 
     else:
-        print("输入错误，请重新输入")
+        print('你他妈输的什么鬼东西，给老子输入整数')
