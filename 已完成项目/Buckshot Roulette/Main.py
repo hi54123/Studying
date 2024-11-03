@@ -1,5 +1,6 @@
 import random
 import json
+from random import randint
 
 
 class Player1:
@@ -20,6 +21,7 @@ class Player1:
 	epinephrine_used = 0
 	changer_used = 0
 	medicine_used = 0
+	have_undying_totem = False
 
 
 class Player2:
@@ -40,6 +42,7 @@ class Player2:
 	epinephrine_used = 0
 	changer_used = 0
 	medicine_used = 0
+	have_undying_totem = False
 
 
 class Gun:
@@ -55,7 +58,7 @@ class GlobalVariables:
 	flag = False
 	index = 0
 	will_change = True
-	higest_hp = {1: 3, 2: 4, 3: 6}
+	highest_hp = {1: 3, 2: 4, 3: 6}
 
 
 def restart():
@@ -70,6 +73,7 @@ def restart():
 	Player1.glass_used = 0
 	Player1.handcuff_used = 0
 	Player1.smoke_used = 0
+	Player1.down = 0
 
 	Player2.hp = 3
 	Player2.points = 0
@@ -82,6 +86,7 @@ def restart():
 	Player2.glass_used = 0
 	Player2.handcuff_used = 0
 	Player2.smoke_used = 0
+	Player2.down = 0
 
 	Gun.bullets_num = 0
 	Gun.bullets = []
@@ -393,8 +398,8 @@ def fight():
 					print('吸入一根香烟，增加了1点生命值')
 					GlobalVariables.controller.hp += 1
 					GlobalVariables.controller.smoke_used += 1
-					if GlobalVariables.controller.hp > GlobalVariables.higest_hp[GlobalVariables.rounds]:
-						GlobalVariables.controller.hp = GlobalVariables.higest_hp[GlobalVariables.rounds]
+					if GlobalVariables.controller.hp > GlobalVariables.highest_hp[GlobalVariables.rounds]:
+						GlobalVariables.controller.hp = GlobalVariables.highest_hp[GlobalVariables.rounds]
 
 				if GlobalVariables.rounds == 3 and GlobalVariables.controller.hp <= 2:
 					print('您的血量少于2，无法加血，但仍然使用了香烟')
@@ -406,17 +411,32 @@ def fight():
 
 		elif op == '6':
 			if '手机' in GlobalVariables.controller.got_items:
+				a = randint(1, 10)
+				if a == 10 and GlobalVariables.controller.name != 'Pradon':
+					print('运气真不好，你的鼓包手机爆炸啦！BOOM!')
+					GlobalVariables.controller.hp -= 1
+					return None
+
 				input('信息仅允许持枪者了解，请对方回避。\n按回车继续')
 				i = random.randint(0, Gun.bullets_num - 1)
 				while GlobalVariables.index >= i:
 					i = random.randint(0, Gun.bullets_num - 1)
 
-				if Gun.bullets[i]:
-					input(f'第{i + 1}发是实弹，回车进行下一步')
-					print('\n' * 50)
-				else:
-					input(f'第{i + 1}发是空弹，回车进行下一步')
-					print('\n' * 50)
+				if a <= 6 or GlobalVariables.controller.name == 'Pradon':  #非鼓包
+					if Gun.bullets[i]:
+						input(f'第{i + 1}发是实弹，回车进行下一步')
+						print('\n' * 50)
+					else:
+						input(f'第{i + 1}发是空弹，回车进行下一步')
+						print('\n' * 50)
+				if a > 6 and GlobalVariables.controller.name != 'Pradon':  #鼓包
+					if Gun.bullets[i]:
+						input(f'第{i + 1}发是空弹，回车进行下一步')
+						print('\n' * 50)
+					else:
+						input(f'第{i + 1}发是实弹，回车进行下一步')
+						print('\n' * 50)
+
 				GlobalVariables.controller.got_items.remove('手机')
 				GlobalVariables.controller.phone_used += 1
 			else:
@@ -478,8 +498,8 @@ def fight():
 					else:
 						GlobalVariables.controller.hp += 2
 						print(f'哇塞！运气真好，增加两滴血,剩余{GlobalVariables.controller.hp}滴')
-						if GlobalVariables.controller.hp > GlobalVariables.higest_hp[GlobalVariables.rounds]:
-							GlobalVariables.controller.hp = GlobalVariables.higest_hp[GlobalVariables.rounds]
+						if GlobalVariables.controller.hp > GlobalVariables.highest_hp[GlobalVariables.rounds]:
+							GlobalVariables.controller.hp = GlobalVariables.highest_hp[GlobalVariables.rounds]
 
 				GlobalVariables.controller.medicine_used += 1
 				GlobalVariables.controller.got_items.remove('小药丸')
@@ -535,7 +555,19 @@ def give_items():
 		while len(Player2.got_items) < 8 and i2 < 4:
 			Player2.got_items.append(random.choice(item_list))
 			i2 += 1
-	print('\n以下是玩家的道具列表：')
+
+	who = random.choice([Player1, Player2])
+	if who.name == 'Pradon':
+		undying_totem = random.randint(1, 5)
+		if undying_totem == 1:
+			who.hava_undying_totem =True
+	else:
+		undying_totem = random.randint(1, 10)
+		if undying_totem == 1:
+			who.hava_undying_totem = True
+
+
+	print('\n以下是玩家的道具列表：不要忘记了不死图腾')
 	print(f'{Player1.name}拥有的道具:{Player1.got_items}')
 	print(f'{Player2.name}拥有的道具:{Player2.got_items}')
 
@@ -628,12 +660,18 @@ def main():
 		flag = True
 		while GlobalVariables.rounds <= 3:
 			if flag:
+				print('更新：鼓包的手机（手机有30%概率给予错误信息，%10概率爆炸-1hp，%60概率正常）\n不死图腾（5%概率获取）：抵抗一次致命伤害，恢复为1hp，无法被偷窃，不显示在道具列表，上限一个，不占用道具上限')
 				op = input('输入1开始游戏；输入2展示统计信息')
 			if op == '1':
 				flag = False
 				fight()
 
 				if Player1.hp <= 0:
+					if Player1.have_undying_totem:
+						Player1.hp = 1
+						print(f'使用了不死图腾，{Player1.name}剩余1滴血')
+						continue
+
 					Player2.points += 1
 					GlobalVariables.rounds += 1
 					print(f'{Player1.name} 死亡。{Player2.name} 胜利，共胜利了{Player2.points}局')
@@ -641,6 +679,11 @@ def main():
 						print(f'接下来进入第{GlobalVariables.rounds}局\n')
 
 				elif Player2.hp <= 0:
+					if Player2.have_undying_totem:
+						Player2.hp = 1
+						print(f'使用了不死图腾，{Player2.name}剩余1滴血')
+						continue
+
 					Player1.points += 1
 					GlobalVariables.rounds += 1
 					print(f'{Player2.name} 死亡。{Player1.name} 胜利，共胜利了{Player1.points}局')
